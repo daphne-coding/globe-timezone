@@ -53,6 +53,60 @@ function* _4(d3,size,styles,graticule,countries,zones,color,path,projection)
   yield svg.node();
   render();
 
+  const tooltip = d3
+    .select("body")
+    .append("div")
+    .attr("class", "globe-tooltip")
+    .style("position", "fixed")
+    .style("pointer-events", "none")
+    .style("background", "rgba(0, 0, 0, 0.75)")
+    .style("color", "#fff")
+    .style("padding", "6px 8px")
+    .style("border-radius", "4px")
+    .style("font", "12px/1.4 sans-serif")
+    .style("opacity", 0);
+
+  const updateTooltip = (event) => {
+    const coords = projection.invert(d3.pointer(event, svg.node()));
+    if (!coords) {
+      tooltip.style("opacity", 0);
+      return;
+    }
+
+    const zone = zones.features.find((feature) =>
+      d3.geoContains(feature, coords)
+    );
+    const country = countries.features.find((feature) =>
+      d3.geoContains(feature, coords)
+    );
+
+    if (!zone && !country) {
+      tooltip.style("opacity", 0);
+      return;
+    }
+
+    const parts = [];
+    if (zone) parts.push(`Timezone: ${zone.properties.utc_offset}`);
+    if (country) {
+      const name =
+        country.properties?.name ||
+        country.properties?.NAME ||
+        country.id ||
+        "Unknown country";
+      parts.push(`Country: ${name}`);
+    }
+
+    tooltip
+      .html(parts.join("<br>"))
+      .style("opacity", 1)
+      .style("left", `${event.clientX + 12}px`)
+      .style("top", `${event.clientY + 12}px`);
+  };
+
+  svg.on("pointermove", updateTooltip).on("pointerleave", () => {
+    tooltip.style("opacity", 0);
+  });
+
   const degreesPerPixel = 180 / Math.PI / projection.scale();
   svg.call(
     d3.drag().on("drag", (event) => {
