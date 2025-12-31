@@ -31,3 +31,7 @@ const runtime = new Runtime();
 const main = runtime.module(define);
 main.value("foo").then(value => console.log(value));
 ~~~
+
+## Deploying to GitHub Pages
+
+A GitHub Actions workflow (`.github/workflows/pages.yml`) packages the static assets in this repository and publishes them to GitHub Pages. Once Pages is enabled for the repository (Settings → Pages → Source: GitHub Actions), pushes to the `main` branch will automatically build and deploy the site. You can also trigger a deployment manually from the **Actions** tab by running the "Deploy static site to GitHub Pages" workflow.
